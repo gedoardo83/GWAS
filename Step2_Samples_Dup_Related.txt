@@ -1,0 +1,31 @@
+##Filter out closely related individuals (PI_HAT > 0.1875 and high mean IBD)
+#create a subset of frequent SNPs, with low missing rate for subsequent IBD calculations
+plink --bfile input.file --maf 0.35 --geno 0.05 --hwe 1e-6 --allow-no-sex --make-bed --out QC_step2_frequent
+
+#perform pruning on frequent SNPs
+plink --bfile QC_step2_frequent --indep-pairwise 50 5 0.2 --allow-no-sex --out QC_step2_prunedSNPs
+
+#generate IBD report from pruned SNPs
+plink --bfile QC_step2_frequent --extract QC_step2_prunedSNPs.prune.in --genome --allow-no-sex --out QC_step2_pruned
+
+##############################
+######  Into R console  ######
+##############################
+#read file
+genome <- read.table("QC_step2_pruned.genome", header=T, as.is=T)
+
+#select pairs of individuals with PI_HAT > 0.1875 (half-way between second and third degree relatives)
+genome <- genome[genome$PI_HAT > 0.1875,]
+
+#compute mean(IBD), var(IBD), SE(IBD)
+mean.IBD <- 0*genome$Z0 + 1*genome$Z1 + 2*genome$Z2
+var.IBD <- ((0-mean.IBD)^2)*genome$Z0 + ((1-mean.IBD)^2)*genome$Z1 + ((2-mean.IBD)^2)*genome$Z2
+se.IBD <- sqrt(var.IBD)
+
+#save IBD plot
+png("QC_step2_IBD.png", res=1200, height=5, width=5, units="in")
+plot(mean.IBD, se.IBD, xlab="Meand IBD", ylab="SE IBD")
+dev.off()
+
+#Find individuals with mean IBD > 1 and for each couple filter out the sample with higher missing genotypes
+high_ibd <- genome[mean.IBD > 1, ]
