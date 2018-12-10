@@ -29,3 +29,21 @@ dev.off()
 
 #Find individuals with mean IBD > 1 and for each couple filter out the sample with higher missing genotypes
 high_ibd <- genome[mean.IBD > 1, ]
+mis <- read.table("QC_step1.miss.imiss", header=T)
+high_ibd <- merge(high_ibd, mis[,c(1,6)], by.x="FID1", by.y="FID") #Suppose unique ids are in FID field
+colnames(high_ibd)[ncol(high_ibd)] <- "F_MISS1"
+high_ibd <- merge(high_ibd, mis[,c(1,6)], by.x="FID2", by.y="FID")
+colnames(high_ibd)[ncol(high_ibd)] <- "F_MISS2"
+fail_ibd_qc <- data.frame(FID=character(), IID=character(), stringsAsFactors=F)
+
+for (n in 1:nrow(high_ibd)) {
+  if (high_ibd$F_MISS1[n] > high_ibd$F_MISS2[n]) {
+    fail_ibd_qc[nrow(fail_ibd_qc)+1,] <- c(high_ibd$FID1[n], high_ibd$IID1[n])
+  } else {
+    fail_ibd_qc[nrow(fail_ibd_qc)+1,] <- c(high_ibd$FID2[n], high_ibd$IID2[n])
+  }
+}
+
+#Save list of individuals failing IBD QC
+write.table(fail_ibd_qc, "fail_ibd_qc.txt", row.names=F, quote=F)
+  
