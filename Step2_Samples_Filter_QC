@@ -1,0 +1,5 @@
+#merge single fail_qc lists
+(head -n1 fail_het_qc.txt | cut -d" " -f1,2 & cut -d" " -f1,2 fail_* | grep -v "FID IID" | sort -u) > fail_qc.txt
+
+#remove samples failing qc
+plink --bfile input.file --remove fail_qc.txt --allow-no-sex --make-bed --out QCed_samples
