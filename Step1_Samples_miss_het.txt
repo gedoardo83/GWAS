@@ -1,0 +1,32 @@
+#input file prefix as argument 1
+#calculate missingness
+plink --bfile input.file --missing --allow-no-sex --out QC_step1.miss
+
+#calculate heterozygosity
+plink --bfile input.file --het --allow-no-sex --out QC_step1.het
+
+##############################
+######  Into R console  ######
+##############################
+#load data
+het <- read.table("QC_step1.het.het", header=T)
+mis <- read.table("QC_step1.miss.imiss", header=T)
+
+#calculate heterozigosity rate
+mishet <- data.frame(FID=het$FID, IID=het$IID, het.rate=(het$N.NM - het$O.HOM)/het$N.NM, mis.rate=mis$F_MISS)
+
+#plot
+plot(y=mishet$het.rate, x=mishet$mis.rate, ylab="Heterozygosity rate", xlab="Proportion of missing genotypes")
+
+#Examine plot and decide appropriate threshold for filtering het and miss
+#Save plot image with desired thresholds (usually miss 0.01-0.05, het.low ~ 0.2, het.up ~ 0.4)
+png("QC_step1_mis_het.png", res=1200, height=5, width=5, units="in")
+plot(y=mishet$het.rate, x=mishet$mis.rate, ylab="Heterozygosity rate", xlab="Proportion of missing genotypes")
+abline(v=miss.threshold, lty=2) #vertical dashed line
+abline(h=lower.het.threshold, lty=2) #horizontal dashed line
+abline(h=upper.het.threshold, lty=2) #horizontal dashed line
+dev.off()
+
+#save filtered individuals to file
+write.table(mishet[mishet$mis.rate > miss.threshold,], file="fail_mis_qc.txt", row.names=F, quote=F)
+write.table(mishet[mishet$het.rate < lower.het.threshold | mishet$het.rate > upper.het.threshold,], file="fail_het_qc.txt", row.names=F, quote=F)
