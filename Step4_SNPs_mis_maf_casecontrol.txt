@@ -12,4 +12,4 @@ plink --bfile QCed_samples --test-missing --allow-no-sex --out QC_step3.call.rat
 Rscript --vanilla QC_SNPs.R
 
 #Filter out filtered SNPs (usually assume thresholds MAF 0.01, missing 0.05, miss.rate test 1e-5)
-plink --bfile QCed_samples --excluded fail_SNPs_diffmiss.txt --maf 0.01 --hwe 1e-6 --geno 0.05 --allow-no-sex --make-bed --out Processed_dataset
+plink --bfile QCed_samples --exclude fail_SNPs_diffmiss.txt --maf 0.01 --hwe 1e-6 --geno 0.05 --allow-no-sex --make-bed --out Processed_dataset
