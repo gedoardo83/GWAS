@@ -1,0 +1,15 @@
+#compute SNPs missing rate
+plink --bfile QCed_samples --missing --allow-no-sex --out QC_step3.mis
+
+#compute allele freq
+plink --bfile QCed_samples --freq --allow-no-sex --out QC_step3.freq
+
+#compute test for difference in missing call rates between cases and controls
+#suppose phenos are encoded in your files, otherwise provide pheno with --pheno option
+plink --bfile QCed_samples --test-missing --allow-no-sex --out QC_step3.call.rate
+
+#Generate SNPs plots and fail_SNPs_diffmiss.txt file
+Rscript --vanilla QC_SNPs.R
+
+#Filter out filtered SNPs (usually assume thresholds MAF 0.01, missing 0.05, miss.rate test 1e-5)
+plink --bfile QCed_samples --excluded fail_SNPs_diffmiss.txt --maf 0.01 --hwe 1e-6 --geno 0.05 --allow-no-sex --make-bed --out Processed_dataset
