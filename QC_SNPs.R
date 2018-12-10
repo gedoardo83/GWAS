@@ -3,7 +3,7 @@ diffmiss <- read.table("QC_step3.call.rate.missing", header=T, as.is=T)
 diffmiss <- diffmiss[diffmiss$P < 1e-5,]
 write.table(diffmiss$SNP, "fail_SNPs_diffmiss.txt", row.names=F, col.names=F, quote=F)
 
-#create plots for MAS and missing rate
+#create plots for MAF and missing rate
 lmis <- read.table("QC_step3.mis.lmiss", header=T)
 png("SNPs_lmiss.png", res=1200, width=5, height=5, units="in")
 plot(log10(lmis$F_MISS), ylab="Number of SNPs", xlab="Fraction missing genotypes (log10)", main="Fraction of missing data")
