@@ -1,2 +1,2 @@
-# GWAS_QC
-QC steps for GWAS data
+# GWAS
+This repository contains scripts and pipelines used in GWAS analysis
